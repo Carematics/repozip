@@ -25,7 +25,7 @@ $(function() {
     $log.append(s);
   }
   function startDownload() {
-    $('#gooProjectName').attr('disabled','disabled');
+    $('#projectURL').attr('disabled','disabled');
     $('#downloadButton').attr('disabled','disabled');
     log('Scanning...');
   }
