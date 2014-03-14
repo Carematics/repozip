@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Repo Zip</title>
+    <link href='index.css' rel='stylesheet' type='text/css'>
+    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>-->
+  </head>
+  <body>
+    <div id="main">
+      <div id="title">
+        <h1>RepoZip</h1>
+      </div>
+      <div id="downloadConfig">
+        <div>This is an SVN download tool</div>
+        <div>Enter SVN URL (probably should end with /trunk/)</div>
+        <input id="projectURL" type="text" size="70" value=""></input>
+        <input id="downloadButton" type="button" value="Zip"></input>
+      </div>
+      <div id="outputArea">
+        <div id = "consoleTop">
+          <p id="consoleTitle">Console Output</p>
+          <div id="downloadLinkArea">
+            Download not yet ready
+          </div>
+        </div>
+        <div id="log"></div>
+      </div>
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="repozip.js"></script>
+  </body>
+</html>
