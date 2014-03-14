@@ -35,7 +35,7 @@ $(function() {
   $('#downloadButton').click(function(){
     startDownload();
   });
-  $('#gooProjectName').keyup(function(e){
+  $('#projectURL').keyup(function(e){
     if(e.keyCode === 13) {
       startDownload();
     }
