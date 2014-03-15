@@ -2,7 +2,7 @@ import org.vertx.groovy.core.buffer.Buffer;
 import static java.util.UUID.randomUUID
 
 def server = vertx.createHttpServer().requestHandler { req ->
-  if (req.uri.startsWith("/q/")) {
+  if (req.uri.startsWith("/q/")  && req.uri[3..-1].matches("^[-a-zA-Z0-9.]*\$")) {
   	req.response.sendFile(req.uri[3..-1])
   } else {
   	req.response.end new File("index.html").getText()
