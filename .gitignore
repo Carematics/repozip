@@ -3,3 +3,6 @@
 /.classpath
 /.project
 /.settings
+/out
+/logs
+/src/main/web/jobs

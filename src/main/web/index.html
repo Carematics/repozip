@@ -5,24 +5,29 @@
   </head>
   <body>
     <div id="main">
-      <div id="title">
+      <div>
         <h1>RepoZip</h1>
       </div>
-      <div id="downloadConfig">
-        <div>This is an SVN download tool</div>
-        <div>Enter SVN URL (probably should end with /trunk/)</div>
+      <div>This is an HTTP-only SVN download tool</div>
+      <br>
+      <div>Enter SVN URL (probably should end with /trunk/)</div>
+      <div>
         <input id="projectURL" type="text" size="70" value=""></input>
         <input id="downloadButton" type="button" value="Zip"></input>
       </div>
-      <div id="outputArea">
-        <div id = "consoleTop">
-          <p id="consoleTitle">Console Output</p>
-          <div id="downloadLinkArea">
-            Download not yet ready
-          </div>
-        </div>
-        <div id="log"></div>
-      </div>
+      <br>
+      <div id="downloadLinkArea">Download not yet ready</div>
+      <br>
+      <span>status: </span><span id="ripperStatus"></span>
+      <br>
+      <span># files Found: </span><span id="ripperNumFiles"></span>
+      <br>
+      <span>time left: </span><span id="ripperTime"></span>
+      <br>
+      <span>percent complete: </span><span id="ripperPercent"></span>
+      <br>
+      <span>current file: </span><span id="ripperFile"></span>
+      <br>
     </div>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>

@@ -27,7 +27,38 @@ $(function() {
   function startDownload() {
     $('#projectURL').attr('disabled','disabled');
     $('#downloadButton').attr('disabled','disabled');
-    log('Scanning...');
+    var url = $('#projectURL').val();
+    $.ajax({
+      url: 'newjob',
+      data: {
+        url: url
+      },
+      success: function(x) {
+        updateStatus(x.id);
+      }
+    })
+  }
+  function updateStatus(id) {
+    $.ajax({
+      url: 'jobstatus/' + id,
+      success: function(x) {
+        if(x.status === 'done') {
+          setDownloadLink(x.downloadURL, 'Download Now');
+          $('#ripperStatus').text('done')
+          $('#ripperPercent').text(100)
+          $('#ripperTime').text('')
+          $('#ripperFile').text('')
+        } else {
+          $('#ripperJobId').text(id)
+          $('#ripperStatus').text(x.status)
+          $('#ripperPercent').text(x.percentComplete)
+          $('#ripperTime').text(x.timeLeft)
+          $('#ripperFile').text(x.currentFile)
+          $('#ripperNumFiles').text(x.filesFound)
+          setTimeout(_.partial(updateStatus, id), 400)
+        }
+      }
+    })
   }
   function setDownloadLink(url, linkText) {
     $('#downloadLinkArea').html($('<a>').attr('href',url).text(linkText));
@@ -40,6 +71,7 @@ $(function() {
       startDownload();
     }
   });
+  $('#projectURL')[0].focus();
   window.log = log;
   window.logEraseLine = logEraseLine;
   window.setDownloadLink = setDownloadLink;

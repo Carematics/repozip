@@ -20,11 +20,11 @@ dependencies {
     compile 'org.jsoup:jsoup:1.7.3'
     compile 'joda-time:joda-time:2.3'
     compile 'org.apache.commons:commons-lang3:3.1'
+    compile 'com.google.guava:guava:15.0'
 }
 
 jar {
     from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
-    from "logback.xml"
     manifest {
         attributes("Implementation-Title": "RepoZip", "Implementation-Version": "1", "Main-Class": "com.carematics.repozip.Main")
     }

@@ -4,27 +4,36 @@ import java.util.zip.ZipOutputStream
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import com.carematics.util.Util
-class Main {
-  static pprintln(x) {
-    println Util.prettyPrint(x)
+import com.google.common.io.Files
+class Ripper {
+  String id
+  String projectURL
+  String downloadURL = null
+  String filesFound = 0
+  String currentFile = ''
+  String timeLeft = ''
+  int percentComplete = 0
+  String status = ''
+  Ripper(id, url) {
+    this.projectURL = url
+    this.id = id
   }
-  static Document getDoc(url) {
-    Jsoup.connect(url).get()
-  }
-  static main(args) {
-    getProject('http://google-voice-java.googlecode.com/svn/trunk/')
-  }
-  static getProject(url) {
-    downloadProject(url)
-    println 'downloaded, zipping...'
-    def saveDir = new File(url2saveDir(url))
-    def zipFile = new File('out/'+url2ProjectName(url)+'.zip')
+  void start() {
+    status = 'starting job'
+    downloadProject()
+    status = 'downloaded, zipping...'
+    File saveDir = new File(getSaveDir())
+    File zipFile = new File("out/${id}.zip")
     zipDir(saveDir, zipFile)
     saveDir.deleteDir()
-    println 'done'
+    downloadURL = "jobs/${id}.zip"
+    File fileForWeb = new File("src/main/web/" + downloadURL)
+    fileForWeb.getParentFile().mkdirs()
+    Files.copy(zipFile, fileForWeb) 
+    status = 'done'
   }
-  static downloadProject(projectURL) {
-    println 'finding files'
+  void downloadProject() {
+    status = 'finding files'
     def links = []
     def getLinksFromURL
     getLinksFromURL = { url ->
@@ -34,42 +43,45 @@ class Main {
           if(href.endsWith('/')) {
             getLinksFromURL(thisFilePath)
           } else {
-            println "found file: $thisFilePath"
+            currentFile = thisFilePath
             links += thisFilePath
           }
         }
       }
-      println "files found: " + links.size()
+      filesFound = links.size()
       return links
     }
     getLinksFromURL(projectURL)
-    println "downloading ${links.size()} files"
+    status = "downloading ${links.size()} files"
     def numFiles = links.size()
     def numDone = 0
     def timeStart = System.currentTimeMillis()
     links.each {
-      downloadFile(projectURL, it)
+      downloadFile(it)
       numDone++
       def doneFraction = 1.0 * numDone / numFiles
-      def timeLeft = (1.0 - doneFraction) * (System.currentTimeMillis() - timeStart) / doneFraction
-      println 'downloading file: ' + it
-      println 'percent complete: ' + ((int)Math.floor(100*doneFraction))
-      println 'time left: ' + Util.humanReadableMilliseconds((int)Math.ceil(timeLeft))
+      def timeLeftMS = (1.0 - doneFraction) * (System.currentTimeMillis() - timeStart) / doneFraction
+      this.currentFile = it
+      this.percentComplete = ((int)Math.floor(100*doneFraction))
+      this.timeLeft = Util.humanReadableMilliseconds((int)Math.ceil(timeLeftMS))
     }
   }
-  static url2ProjectName(url) {
-    def doubleSlash = url.indexOf('//')
-    def dotAfterDoubleSlash = url.indexOf('.', doubleSlash)-1
-    def projectName = url[doubleSlash+2..dotAfterDoubleSlash]
+  String getProjectName() {
+    def doubleSlash = projectURL.indexOf('//')
+    def dotAfterDoubleSlash = projectURL.indexOf('.', doubleSlash)-1
+    def projectName = projectURL[doubleSlash+2..dotAfterDoubleSlash]
     return projectName
   }
-  static url2saveDir(url) {
-    return 'out/' + url2ProjectName(url)
+  String getSaveDir() {
+    return 'out/' + getProjectName()
   }
-  static downloadFile(String origURL, String url) {
-    File dest = new File(url2saveDir(url), url[origURL.size()..-1])
+  void downloadFile(String url) {
+    File dest = new File(getSaveDir(), url[projectURL.size()..-1])
     dest.getParentFile().mkdirs()
     dest << new URL(url).openConnection().getContent()
+  }
+  static Document getDoc(url) {
+    Jsoup.connect(url).get()
   }
   static zipDir(File dir, File outputFile) {
     ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile))
