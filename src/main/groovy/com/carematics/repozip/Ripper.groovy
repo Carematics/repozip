@@ -4,18 +4,45 @@ import java.util.zip.ZipOutputStream
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import com.carematics.util.Util
-import com.google.common.io.Files
 class Ripper {
-  String id
-  String projectURL
+  static {
+    Thread.start('Ripper Cleaner') {
+      def fileExpirationAge = 60 * 60 * 1000
+      def removeExpiredChildren = { File dir ->
+        if(dir.isDirectory()) {
+          def now = System.currentTimeMillis()
+          dir.eachFile { file ->
+            if(now - file.lastModified() > fileExpirationAge) {
+              if(file.isDirectory()) {
+                file.deleteDir()
+              } else {
+                file.delete()
+              }
+            }
+          }
+        }
+      }
+      File hostedJobs = new File('src/main/web/jobs')
+      File outDir = new File('out')
+      while(true) {
+        removeExpiredChildren(hostedJobs)
+        removeExpiredChildren(outDir)
+        Thread.sleep(fileExpirationAge)
+      }
+    }
+  }
+  String id = null
+  String projectURL = null
+  String projectName = null
   String downloadURL = null
   String filesFound = 0
-  String currentFile = ''
-  String timeLeft = ''
+  String currentFile = null
+  String timeLeft = null
   int percentComplete = 0
-  String status = ''
-  Ripper(id, url) {
+  String status = null
+  Ripper(id, url, projectName) {
     this.projectURL = url
+    this.projectName = projectName
     this.id = id
   }
   void start() {
@@ -23,13 +50,11 @@ class Ripper {
     downloadProject()
     status = 'downloaded, zipping...'
     File saveDir = new File(getSaveDir())
-    File zipFile = new File("out/${id}.zip")
+    downloadURL = "jobs/$id/${projectName}.zip"
+    File zipFile = new File("src/main/web/", downloadURL)
+    zipFile.getParentFile().mkdirs()
     zipDir(saveDir, zipFile)
     saveDir.deleteDir()
-    downloadURL = "jobs/${id}.zip"
-    File fileForWeb = new File("src/main/web/" + downloadURL)
-    fileForWeb.getParentFile().mkdirs()
-    Files.copy(zipFile, fileForWeb) 
     status = 'done'
   }
   void downloadProject() {
@@ -66,14 +91,8 @@ class Ripper {
       this.timeLeft = Util.humanReadableMilliseconds((int)Math.ceil(timeLeftMS))
     }
   }
-  String getProjectName() {
-    def doubleSlash = projectURL.indexOf('//')
-    def dotAfterDoubleSlash = projectURL.indexOf('.', doubleSlash)-1
-    def projectName = projectURL[doubleSlash+2..dotAfterDoubleSlash]
-    return projectName
-  }
   String getSaveDir() {
-    return 'out/' + getProjectName()
+    return "out/$id/$projectName"
   }
   void downloadFile(String url) {
     File dest = new File(getSaveDir(), url[projectURL.size()..-1])
@@ -90,17 +109,16 @@ class Ripper {
   }
   static zipRecurse(File dir, String path, ZipOutputStream zos) {
     dir.eachFile() { file ->
+      def entryPath = path + '/' + file.getName()
+      def entry = new ZipEntry(entryPath)
+      entry.time = file.lastModified()
+      zos.putNextEntry(entry)
       if(file.isFile()) {
-        ZipEntry entry = new ZipEntry(path + '/' + file.getName())
-        entry.time = file.lastModified()
-        zos.putNextEntry(entry)
-        if( file.isFile() ){
-          def fis = new FileInputStream(file)
-          zos << fis
-          fis.close()
-        }
+        def fis = new FileInputStream(file)
+        zos << fis
+        fis.close()
       } else if (file.isDirectory()) {
-        zipRecurse(file, path + '/' + file.getName(), zos)
+        zipRecurse(file, entryPath, zos)
       }
     }
   }

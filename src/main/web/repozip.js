@@ -42,6 +42,9 @@ $(function() {
     $.ajax({
       url: 'jobstatus/' + id,
       success: function(x) {
+        if(!x.status) {
+          return;
+        }
         if(x.status === 'done') {
           setDownloadLink(x.downloadURL, 'Download Now');
           $('#ripperStatus').text('done')
