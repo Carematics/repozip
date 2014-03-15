@@ -21,7 +21,7 @@ server.websocketHandler{ ws ->
 	proc.waitForOrKill(1000 * 60 * 60);
 	"docker cp ${uuid}:${uuid}.zip .".execute()
 	"docker rm ${uuid}".execute()
-	lns.each { it -> println it; ws.write(new Buffer(it))}
+	lns.each { it -> ws.write(new Buffer(it))}
 	ws.write(new Buffer("Done ${uuid}"));
 	ws.dataHandler({ _ -> ws.close();  })
     });
